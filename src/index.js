@@ -5,7 +5,7 @@ import App from "./App";
 import Map from "./MapRoutingMachine";
 import UserDetails from "./userDetails";
 
-ReactDOM.render(<Router>
+ReactDOM.render(<Router basename={process.env.PUBLIC_URL}>
 
 <Routes>
 
