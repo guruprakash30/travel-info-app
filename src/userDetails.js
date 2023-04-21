@@ -1,19 +1,23 @@
-import UserBox from "./userBox";
-import { useLocation } from "react-router-dom"
+import UserAccordion from "./userAccordion";
+import { useLocation, useParams } from "react-router-dom"
 
 const UserDetails = () => {
 
     const location = useLocation();
+
+    const {travelType} = useParams();
+
+    console.log(travelType);
     
     return (<div className="container">
-  <div className="my-5">
+  <div className="my-5 box has-shadow">
 <h3 className="heading has-text-weight-bold">HOST DETAILS</h3>
-<UserBox data={location.state.filter(traveller=>traveller.travelType=="HOST")}></UserBox>
+<UserAccordion data={location.state.filter(traveller=>traveller.travelType==="HOST")}></UserAccordion>
 </div>
-<div className="my-5">
+{travelType==="HOST" && <div className="my-5 box has-shadow">
 <h3 className="heading has-text-weight-bold">POOL DETAILS</h3>
-<UserBox data={location.state.filter(traveller=>traveller.travelType=="POOL")}></UserBox>
-</div>
+<UserAccordion data={location.state.filter(traveller=>traveller.travelType==="POOL")}></UserAccordion>
+</div>}
     </div>);
 }
  

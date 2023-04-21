@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import L from "leaflet";
+import L, { point } from "leaflet";
 import {
   TileLayer,
   MapContainer,
@@ -61,7 +61,45 @@ const Map = () => {
 
   const RoutingMachineRef = useRef(null);
 
-  const handlePostClick = () =>{
+  const handlePostClick = () =>{console.log(nameState);
+
+    if(nameState==null){
+      document.getElementById("user_name").classList.add("is-danger");
+      document.getElementById("name_helper").innerHTML="please enter a valid name";
+      document.getElementById("name_helper").classList.remove("is-hidden");
+    }
+
+    else if(document.querySelector('input[name="answerForPost"]:checked')==null){
+      document.getElementById("radio_helper").innerHTML="please check in your travel type";
+      document.getElementById("radio_helper").classList.remove("is-hidden");
+    }
+
+    else if(dateState==null){
+      document.getElementById("user_date").classList.add("is-danger");
+      document.getElementById("date_helper").innerHTML="please enter your expected date of travel";
+      document.getElementById("date_helper").classList.remove("is-hidden");
+    }
+
+    else if(DaysState==null){
+      document.getElementById("user_wait_days").classList.add("is-danger");
+      document.getElementById("days_helper").innerHTML="please enter the days you wish to wait";
+      document.getElementById("days_helper").classList.remove("is-hidden");
+    }
+
+    else if(contactState==null){
+      document.getElementById("user_contact").classList.add("is-danger");
+      document.getElementById("contact_helper").innerHTML="please enter phone number";
+      document.getElementById("contact_helper").classList.remove("is-hidden");
+    }
+
+    else if(rideCountState==null){
+      document.getElementById("user_ride_count").classList.add("is-danger");
+      document.getElementById("ride_count_helper").innerHTML="please enter number of seats available";
+      document.getElementById("ride_count_helper").classList.remove("is-hidden");
+    }
+
+    else{
+
     const requestBodyPost = {
       from:cord[0].f,
       to:cord[1].t,
@@ -76,42 +114,42 @@ const Map = () => {
       pointA:{lat:cord[0].x,lng:cord[0].y},
       pointB:{lat:cord[1].x,lng:cord[1].y}
     }
-    fetch('http://localhost:8080/details/post',{
+    fetch('http://18.116.114.239:8080/details/post',{
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
       body: JSON.stringify(requestBodyPost)
     }).then(res=>res.json()).then(data=>setResJsonPost(data));
+    }
   }
 
   useEffect(()=>{
-    if(resJsonPost!=null){
-      navigate('/user/details',{state:resJsonPost})
+    if(resJsonPost!=null && resJsonPost.HTTP_STATUS_CODE==204){
+      navigate('/user/details'+document.querySelector('input[name="answerForPost"]:checked').value,{state:[]})
+    }
+    else if(resJsonPost!=null){
+      navigate('/user/details/'+document.querySelector('input[name="answerForPost"]:checked').value,{state:resJsonPost})
     }
   },[resJsonPost])
 
   const handleGetClick = () =>{
 
-    const requestBodyGet = {
-      pointA:{lat:cord[0].x,lng:cord[0].y},
-      pointB:{lat:cord[1].x,lng:cord[1].y},
+    fetch('http://18.116.114.239:8080/details/get?'+new URLSearchParams({
+      pointA:JSON.stringify({lat:cord[0].x,lng:cord[0].y}),
+      pointB:JSON.stringify({lat:cord[1].x,lng:cord[1].y}),
       selectedRadioButton:document.querySelector('input[name="answerForGet"]:checked').value
-    }
-
-    fetch('http://localhost:8080/details/get',{
-      method:"GET",
-      headers:{
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(requestBodyGet)
-    }).then(res=>res.json()).then(data=>setResJsonGet(data));
-
+    })).then(res=>res.json())
+       .then(data=>setResJsonGet(data));
   }
 
   useEffect(()=>{
-    if(resJsonGet!=null){
-      navigate('/user/details',{state:resJsonGet})
+
+    if(resJsonGet!=null && resJsonGet.HTTP_STATUS_CODE==204){console.log(document.querySelector('input[name="answerForGet"]:checked').value);
+      navigate('/user/details/'+document.querySelector('input[name="answerForGet"]:checked').value,{state:[]})
+    }
+    else if(resJsonGet!=null){
+      navigate('/user/details/'+document.querySelector('input[name="answerForGet"]:checked').value,{state:resJsonGet})
     }
   },[resJsonGet])
 
@@ -222,40 +260,135 @@ const Map = () => {
   <List className="heading has-text-weight-bold">
 NAME
   <ListItemText>
-  <input className="input" onChange={(event)=>setNameState(event.target.value)}/>
+  <input id="user_name" className="input" onChange={(event)=>{
+    setNameState(event.target.value)
+    if(event.target.value==="" || event.target.value.trim()===""){
+      document.getElementById("user_name").classList.add("is-danger");
+      document.getElementById("name_helper").innerHTML="please enter a valid name";
+      document.getElementById("name_helper").classList.remove("is-hidden");
+    }
+    else {
+      document.getElementById("user_name").classList.remove("is-danger");
+      document.getElementById("name_helper").classList.add("is-hidden");
+    }
+  }}/>
+  <p id="name_helper"class="help is-danger is-hidden is-lowercase"></p>
   </ListItemText>
 </List>
   <h3 className="heading has-text-weight-bold my-3">ARE YOU ????</h3>
     <ListItemText>
     <label className="radio has-text-weight-bold heading">
-    <input className="mx-1" value="HOST" type="radio" name="answerForPost"/>
+    <input className="mx-1" value="HOST" type="radio" onClick={()=>{document.getElementById("radio_helper").classList.add("is-hidden")}} name="answerForPost"/>
     HOST
   </label>
   <label className="radio has-text-weight-bold heading">
-    <input className="mx-1" value="POOL" type="radio" name="answerForPost"/>
+    <input className="mx-1" value="POOL" type="radio" onClick={()=>{document.getElementById("radio_helper").classList.add("is-hidden")}} name="answerForPost"/>
     POOL
   </label>
+  <p id="radio_helper"class="help is-danger is-hidden is-lowercase"></p>
     </ListItemText>
   </List>
 <List className="heading has-text-weight-bold">
-HOW MANY DAYS CAN WAIT IN THE QUEUE !!!
+WHAT IS THE DATE OF TRAVEL ???
   <ListItemText>
-  <input type="number" className="input" onChange={(event)=>setDaysState(event.target.value)}/>
+<input type="date" id="user_date"className="input" onChange={
+  (event)=>{
+    if(event.target.value===""){
+      document.getElementById("user_date").classList.add("is-danger")
+      document.getElementById("date_helper").classList.remove("is-hidden");
+      document.getElementById("date_helper").innerHTML="please enter your expected date of travel";
+    }
+    else{
+      setDateState(event.target.value);
+    const input = new Date(event.target.value);
+    const today = new Date();
+
+    const total_time = input.getTime()-today.getTime();
+    
+    const total_days = total_time/(1000*3600*24);
+
+    if(Math.floor(total_days)<0){
+      document.getElementById("user_date").classList.add("is-danger")
+      document.getElementById("date_helper").classList.remove("is-hidden");
+      document.getElementById("date_helper").innerHTML="date cant be back dated";
+    }
+
+    else{
+      document.getElementById("user_date").classList.remove("is-danger")
+      document.getElementById("date_helper").classList.add("is-hidden");
+    }
+    }
+  }
+} />
+<p id="date_helper"class="help is-danger is-hidden is-lowercase"></p>
   </ListItemText>
 </List>
 <List className="heading has-text-weight-bold">
-WHAT IS THE DATE OF TRAVEL ???
+HOW MANY DAYS CAN WAIT IN THE QUEUE !!!
   <ListItemText>
-<input type="date" className="input" onChange={(event)=>setDateState(event.target.value)}/>
+  <input type="number" id="user_wait_days"className="input" onChange={(event)=>{
+    setDaysState(event.target.value);
+    const input = new Date(document.getElementById("user_date").value);
+    const today = new Date();
+
+    const total_time = input.getTime()-today.getTime();
+    
+    const total_days = total_time/(1000*3600*24);
+
+    console.log(event.target.value);
+
+    if(event.target.value>Math.floor(total_days)+1 || event.target.value<=0){
+      const last = Math.floor(total_days)+1;
+      document.getElementById("days_helper").innerHTML="you can enter a number between [1,"+last+"]";
+      document.getElementById("user_wait_days").classList.add("is-danger")
+      document.getElementById("days_helper").classList.remove("is-hidden");
+    }
+
+    else{
+      document.getElementById("user_wait_days").classList.remove("is-danger")
+      document.getElementById("days_helper").classList.add("is-hidden");
+    }
+  }}/>
+  <p id="days_helper"class="help is-danger is-hidden is-lowercase"></p>
   </ListItemText>
 </List>
 <List className="heading has-text-weight-bold">
   CONTACT INFORMATION
-  <ListItemText><input type="text" className="input" placeholder="phone number or email id" onChange={(event)=>setContactState(event.target.value)}/></ListItemText>
+  <ListItemText>
+    <input id="user_contact" type="text" className="input" placeholder="phone number" onChange={(event)=>{
+      setContactState(event.target.value)
+      const contact_regex = /^\d{10}$/gm;
+      if(!contact_regex.test(event.target.value)){
+        document.getElementById("user_contact").classList.add("is-danger");
+        document.getElementById("contact_helper").innerHTML="please enter a valid phone number";
+        document.getElementById("contact_helper").classList.remove("is-hidden");
+      }
+      else {
+        document.getElementById("user_contact").classList.remove("is-danger");
+        document.getElementById("contact_helper").classList.add("is-hidden");
+      }
+      
+    }}/>
+    <p id="contact_helper"class="help is-danger is-hidden is-lowercase"></p>
+  </ListItemText>
 </List>
 <List className="heading has-text-weight-bold">
   HOW MANY CAN JOIN THE RIDE ???
-  <ListItemText><input type="number" className="input" onChange={(event)=>setRideCountState(event.target.value)}/></ListItemText>
+  <ListItemText>
+    <input id="user_ride_count" type="number" className="input" onChange={(event)=>{
+      setRideCountState(event.target.value);
+      if(event.target.value===""){
+        document.getElementById("user_ride_count").classList.add("is-danger");
+        document.getElementById("ride_count_helper").innerHTML="please enter number of seats available";
+        document.getElementById("ride_count_helper").classList.remove("is-hidden");
+      }
+      else {
+        document.getElementById("user_ride_count").classList.remove("is-danger");
+        document.getElementById("ride_count_helper").classList.add("is-hidden");
+      }
+    }}/>
+    <p id="ride_count_helper"class="help is-danger is-hidden is-lowercase"></p>
+    </ListItemText>
 </List>
 <button onClick={handlePostClick} className="button is-dark">POST</button>
 </div>

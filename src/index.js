@@ -11,6 +11,6 @@ ReactDOM.render(<Router basename={process.env.PUBLIC_URL}>
 
     <Route path="/" element={<App/>}/>
     <Route path="/get/:id" element={<Map/>}/>
-    <Route path="/user/details" element={<UserDetails/>}/>
+    <Route exact path="/user/details/:travelType" element={<UserDetails/>}/>
 </Routes>
 </Router>, document.getElementById("root"));
